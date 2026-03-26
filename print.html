@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Impressão — Pianetto Transportes</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff !important; margin: 0; padding: 0; }
+      .print-card { box-shadow: none !important; border: none !important; margin: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Barra de ação -->
+<div class="print-action-bar no-print">
+  <a href="historico.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar ao Histórico</a>
+  <a href="#" id="btn-dup" class="btn btn-dup"><i class="fas fa-copy"></i> Duplicar Ordem</a>
+  <button onclick="window.print()" class="btn btn-pdf"><i class="fas fa-print"></i> Imprimir / Salvar PDF</button>
+</div>
+
+<div class="container">
+<div class="print-card" id="print-area">
+
+  <!-- Cabeçalho -->
+  <div class="form-header">
+    <div class="header-logo-area">
+      <img src="images/logo.png" alt="Pianetto Transportes e Logística" class="header-logo" onerror="this.parentElement.style.display='none'" />
+    </div>
+    <div class="header-info">
+      <h1 class="company-title">PIANETTO TRANSPORTES E LOGÍSTICA</h1>
+      <p class="company-details">CNPJ: 43.976.512/0001-09 &nbsp;|&nbsp; INSC. EST: 20.101.161-1</p>
+      <p class="company-details">ROD. BR 060 KM 388 SALA 139 – RIO VERDE / GO</p>
+      <p class="company-details">comercial.goianesia@pianettotransportes.com.br</p>
+    </div>
+    <div class="header-doc-type">
+      <span class="doc-label">ORDEM DE COLETA</span>
+    </div>
+  </div>
+
+  <!-- Números -->
+  <div class="doc-numbers print-doc-numbers">
+    <div class="doc-num-row">
+      <div class="doc-num-group">
+        <label>PEDIDO</label>
+        <div class="print-value" id="p-pedido">—</div>
+      </div>
+      <div class="doc-num-group">
+        <label>O.C.</label>
+        <div class="print-value oc-input" id="p-oc">—</div>
+      </div>
+      <div class="doc-num-group">
+        <label>DATA DE EMISSÃO</label>
+        <div class="print-value" id="p-data_emissao">—</div>
+      </div>
+      <div class="doc-num-group">
+        <label>STATUS</label>
+        <div id="p-status-badge"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DADOS DA CARGA -->
+  <div class="section-title"><i class="fas fa-box"></i> DADOS DA CARGA</div>
+  <div class="print-grid">
+    <div class="print-field col-2"><label>Remetente</label><div class="print-value" id="p-remetente">—</div></div>
+    <div class="print-field"><label>Cidade Origem</label><div class="print-value" id="p-cidade_origem">—</div></div>
+    <div class="print-field col-2"><label>Recebedor</label><div class="print-value" id="p-recebedor">—</div></div>
+    <div class="print-field"><label>Destino</label><div class="print-value" id="p-destino">—</div></div>
+    <div class="print-field col-2"><label>Mercadoria</label><div class="print-value" id="p-mercadoria">—</div></div>
+    <div class="print-field"><label>Peso Bruto</label><div class="print-value" id="p-peso_bruto">—</div></div>
+    <div class="print-field"><label>Modalidade</label><div class="print-value" id="p-modalidade_veiculo">—</div></div>
+    <div class="print-field"><label>Terminal</label><div class="print-value" id="p-terminal">—</div></div>
+    <div class="print-field"><label>Data Agendamento</label><div class="print-value" id="p-data_agendamento">—</div></div>
+  </div>
+
+  <!-- DADOS DO VEÍCULO -->
+  <div class="section-title"><i class="fas fa-truck"></i> DADOS DO VEÍCULO</div>
+  <div class="veiculo-table-wrapper">
+    <table class="veiculo-table">
+      <thead>
+        <tr>
+          <th>Placa Cavalo</th><th>Placa Carreta 1</th><th>Dolly</th><th>Placa Carreta 3</th><th>UF</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="print-value" id="p-placa_cav">—</div></td>
+          <td><div class="print-value" id="p-placa_car1">—</div></td>
+          <td><div class="print-value" id="p-dolly">—</div></td>
+          <td><div class="print-value" id="p-placa_car3">—</div></td>
+          <td><div class="print-value" id="p-uf">—</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DADOS DO MOTORISTA -->
+  <div class="section-title"><i class="fas fa-user"></i> DADOS DO MOTORISTA</div>
+  <div class="print-grid">
+    <div class="print-field col-2"><label>Motorista</label><div class="print-value" id="p-motorista">—</div></div>
+    <div class="print-field"><label>Celular</label><div class="print-value" id="p-celular">—</div></div>
+    <div class="print-field"><label>CPF</label><div class="print-value" id="p-cpf">—</div></div>
+    <div class="print-field"><label>RG</label><div class="print-value" id="p-rg">—</div></div>
+    <div class="print-field"><label>CNH</label><div class="print-value" id="p-cnh">—</div></div>
+  </div>
+
+  <!-- LOCAL / OBS -->
+  <div class="section-title"><i class="fas fa-map-marker-alt"></i> LOCAL DE COLETA / OBSERVAÇÕES</div>
+  <div class="print-grid">
+    <div class="print-field col-2"><label>Local de Coleta</label><div class="print-value" id="p-local_coleta">—</div></div>
+    <div class="print-field full"><label>Observações</label><div class="print-value" id="p-obs">—</div></div>
+  </div>
+
+  <!-- VALORES -->
+  <div class="section-title"><i class="fas fa-dollar-sign"></i> VALORES DO FRETE</div>
+  <div class="print-grid">
+    <div class="print-field"><label>Valor / Tonelada</label><div class="print-value" id="p-valor_ton">—</div></div>
+    <div class="print-field"><label>Total Frete</label><div class="print-value highlight-value" id="p-total_frete">—</div></div>
+    <div class="print-field"><label>Pedágio</label><div class="print-value" id="p-pedagio">—</div></div>
+    <div class="print-field"><label>Adiantamento</label><div class="print-value" id="p-adiantamento">—</div></div>
+    <div class="print-field"><label>Saldo a Pagar</label><div class="print-value highlight-value saldo" id="p-saldo_pagar">—</div></div>
+  </div>
+
+  <!-- Assinaturas -->
+  <div class="assinaturas-row">
+    <div class="assinatura-box">
+      <div class="assinatura-linha"></div>
+      <div class="print-value" id="p-nome_motorista_ass">MOTORISTA</div>
+      <p class="assinatura-cargo">MOTORISTA</p>
+    </div>
+    <div class="assinatura-box">
+      <div class="assinatura-linha"></div>
+      <div class="print-value" id="p-nome_analista">ANALISTA DE LOGÍSTICA</div>
+      <p class="assinatura-cargo">ANALISTA DE LOGÍSTICA</p>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <div class="form-footer">
+    <img src="images/logo.png" alt="Pianetto" class="footer-logo" onerror="this.style.display='none'" />
+    <span>PIANETTO TRANSPORTES E LOGÍSTICA &nbsp;|&nbsp; CNPJ: 43.976.512/0001-09 &nbsp;|&nbsp; ROD. BR 060 KM 388 – RIO VERDE/GO</span>
+  </div>
+
+</div><!-- /print-card -->
+</div><!-- /container -->
+
+<script src="js/storage.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!id) { document.getElementById('print-area').innerHTML = '<p style="padding:2rem;text-align:center;color:red;">ID da ordem não informado.</p>'; return; }
+
+    await Storage.init();
+    const ordem = await Storage.getById(id);
+    if (!ordem) { document.getElementById('print-area').innerHTML = '<p style="padding:2rem;text-align:center;color:red;">Ordem não encontrada.</p>'; return; }
+
+    // Preencher campos
+    const fields = ['pedido','oc','data_emissao','remetente','cidade_origem','recebedor','destino',
+      'mercadoria','placa_cav','placa_car1','dolly','placa_car3','uf','motorista','celular','cpf','rg','cnh',
+      'local_coleta','obs','valor_ton','total_frete','pedagio','adiantamento','saldo_pagar',
+      'modalidade_veiculo','terminal','data_agendamento','nome_motorista_ass','nome_analista'];
+
+    fields.forEach(f => {
+      const el = document.getElementById('p-' + f);
+      if (el && ordem[f]) {
+        if (f === 'peso_bruto') el.textContent = ordem[f] + ' kg';
+        else if (f === 'valor_ton' && ordem[f]) el.textContent = 'R$ ' + parseFloat(ordem[f]).toLocaleString('pt-BR', {minimumFractionDigits:2});
+        else if (f === 'pedagio' && ordem[f]) el.textContent = 'R$ ' + parseFloat(ordem[f]).toLocaleString('pt-BR', {minimumFractionDigits:2});
+        else if (f === 'adiantamento' && ordem[f]) el.textContent = 'R$ ' + parseFloat(ordem[f]).toLocaleString('pt-BR', {minimumFractionDigits:2});
+        else el.textContent = ordem[f];
+      }
+    });
+
+    // Status badge
+    const statusMap = { 'Pendente':'pendente','Agendada':'agendada','Carregando':'carregando',
+      'Em Trânsito':'transito','Entregue':'entregue','Faturada':'faturada','Cancelada':'cancelada' };
+    const statusEl = document.getElementById('p-status-badge');
+    if (statusEl && ordem.status) {
+      statusEl.innerHTML = `<span class="status-badge status-${statusMap[ordem.status]||'pendente'}">${ordem.status}</span>`;
+    }
+
+    // Título da página para nome do PDF
+    document.title = `${ordem.oc || 'Ordem'} - ${ordem.motorista || 'Pianetto'}`;
+
+    // Botão duplicar
+    document.getElementById('btn-dup').href = `index.html?duplicate=${id}`;
+  });
+</script>
+</body>
+</html>
