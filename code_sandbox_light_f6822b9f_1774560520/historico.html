@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Histórico de Ordens — Pianetto Transportes</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <img src="images/logo.png" alt="Pianetto" class="nav-logo" onerror="this.style.display='none'" />
+    <span>Pianetto Transportes e Logística</span>
+  </div>
+  <div class="navbar-links">
+    <a href="index.html"><i class="fas fa-file-alt"></i> Nova Ordem</a>
+    <a href="historico.html" class="active"><i class="fas fa-history"></i> Histórico</a>
+  </div>
+</nav>
+
+<!-- Status banner -->
+<div id="status-banner" class="status-banner">🔄 Verificando conexão...</div>
+
+<div class="container">
+
+  <!-- Cabeçalho da página -->
+  <div class="page-header">
+    <div class="page-header-logo">
+      <img src="images/logo.png" alt="Pianetto" class="page-header-img" onerror="this.style.display='none'" />
+    </div>
+    <div>
+      <h2 class="page-title"><i class="fas fa-history"></i> Histórico de Ordens</h2>
+      <p class="page-subtitle">Pianetto Transportes e Logística</p>
+    </div>
+  </div>
+
+  <!-- Cards de resumo -->
+  <div class="summary-cards">
+    <div class="summary-card total">
+      <div class="card-icon"><i class="fas fa-list-alt"></i></div>
+      <div class="card-info">
+        <span class="card-label">Total de Ordens</span>
+        <span class="card-value" id="count-total">0</span>
+      </div>
+    </div>
+    <div class="summary-card pendente">
+      <div class="card-icon"><i class="fas fa-clock"></i></div>
+      <div class="card-info">
+        <span class="card-label">Pendentes</span>
+        <span class="card-value" id="count-pendente">0</span>
+      </div>
+    </div>
+    <div class="summary-card transito">
+      <div class="card-icon"><i class="fas fa-truck-moving"></i></div>
+      <div class="card-info">
+        <span class="card-label">Em Trânsito</span>
+        <span class="card-value" id="count-transito">0</span>
+      </div>
+    </div>
+    <div class="summary-card entregue">
+      <div class="card-icon"><i class="fas fa-check-circle"></i></div>
+      <div class="card-info">
+        <span class="card-label">Entregues</span>
+        <span class="card-value" id="count-entregue">0</span>
+      </div>
+    </div>
+    <div class="summary-card faturada">
+      <div class="card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+      <div class="card-info">
+        <span class="card-label">Faturadas</span>
+        <span class="card-value" id="count-faturada">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label><i class="fas fa-search"></i> Buscar</label>
+      <input type="text" id="f-search" class="filter-input" placeholder="Pedido, motorista, placa..." oninput="filterOrdens()" />
+    </div>
+    <div class="filter-group">
+      <label><i class="fas fa-flag"></i> Status</label>
+      <select id="f-status" class="filter-input" onchange="filterOrdens()">
+        <option value="">Todos</option>
+        <option value="Pendente">Pendente</option>
+        <option value="Agendada">Agendada</option>
+        <option value="Carregando">Carregando</option>
+        <option value="Em Trânsito">Em Trânsito</option>
+        <option value="Entregue">Entregue</option>
+        <option value="Faturada">Faturada</option>
+        <option value="Cancelada">Cancelada</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label><i class="fas fa-calendar"></i> Data Inicial</label>
+      <input type="date" id="f-from" class="filter-input" onchange="filterOrdens()" />
+    </div>
+    <div class="filter-group">
+      <label><i class="fas fa-calendar"></i> Data Final</label>
+      <input type="date" id="f-to" class="filter-input" onchange="filterOrdens()" />
+    </div>
+    <div class="filter-group filter-actions">
+      <button onclick="limparFiltros()" class="btn btn-clear-sm"><i class="fas fa-eraser"></i> Limpar</button>
+      <button onclick="exportarCSV()" class="btn btn-csv"><i class="fas fa-file-csv"></i> CSV</button>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="table-wrapper">
+    <table class="ordens-table" id="ordens-table">
+      <thead>
+        <tr>
+          <th onclick="sortBy('oc')">O.C. <i class="fas fa-sort"></i></th>
+          <th onclick="sortBy('pedido')">Pedido <i class="fas fa-sort"></i></th>
+          <th onclick="sortBy('data_emissao')">Data <i class="fas fa-sort"></i></th>
+          <th onclick="sortBy('remetente')">Remetente <i class="fas fa-sort"></i></th>
+          <th onclick="sortBy('motorista')">Motorista <i class="fas fa-sort"></i></th>
+          <th onclick="sortBy('destino')">Destino <i class="fas fa-sort"></i></th>
+          <th onclick="sortBy('placa_cav')">Placa Cav. <i class="fas fa-sort"></i></th>
+          <th onclick="sortBy('status')">Status <i class="fas fa-sort"></i></th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="ordens-body">
+        <tr><td colspan="9" class="loading-row"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginação -->
+  <div class="pagination" id="pagination"></div>
+
+</div><!-- /container -->
+
+<!-- Modal de detalhes -->
+<div id="modal-overlay" class="modal-overlay" onclick="fecharModal(event)">
+  <div class="modal-card" id="modal-card">
+    <div class="modal-header">
+      <img src="images/logo.png" alt="Pianetto" class="modal-logo" onerror="this.style.display='none'" />
+      <div>
+        <h3 id="modal-title">Detalhes da Ordem</h3>
+        <span id="modal-oc" class="modal-oc-badge"></span>
+      </div>
+      <button onclick="fecharModal()" class="modal-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button id="btn-status-modal" class="btn btn-status" onclick="alterarStatusModal()"><i class="fas fa-sync-alt"></i> Alterar Status</button>
+      <button id="btn-pdf-modal" class="btn btn-pdf" onclick="verPdfModal()"><i class="fas fa-file-pdf"></i> Reimprimir / PDF</button>
+      <button id="btn-dup-modal" class="btn btn-dup" onclick="duplicarModal()"><i class="fas fa-copy"></i> Duplicar</button>
+      <button id="btn-del-modal" class="btn btn-danger" onclick="deletarModal()"><i class="fas fa-trash"></i> Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script>
+  let allOrdens = [];
+  let filteredOrdens = [];
+  let currentPage = 1;
+  const PER_PAGE = 15;
+  let sortField = 'created_at';
+  let sortDir = -1;
+  let currentModalId = null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await Storage.init();
+    await loadOrdens();
+  });
+
+  async function loadOrdens() {
+    try {
+      allOrdens = await Storage.getAll();
+      filterOrdens();
+    } catch(e) {
+      document.getElementById('ordens-body').innerHTML =
+        `<tr><td colspan="9" class="error-row"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar: ${e.message}</td></tr>`;
+    }
+  }
+
+  function filterOrdens() {
+    const search = document.getElementById('f-search').value.toLowerCase();
+    const status = document.getElementById('f-status').value;
+    const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
+
+    filteredOrdens = allOrdens.filter(o => {
+      const matchSearch = !search || Object.values(o).some(v => String(v).toLowerCase().includes(search));
+      const matchStatus = !status || o.status === status;
+      const matchFrom = !from || (o.data_emissao && o.data_emissao >= from);
+      const matchTo = !to || (o.data_emissao && o.data_emissao <= to);
+      return matchSearch && matchStatus && matchFrom && matchTo;
+    });
+
+    sortOrdens();
+    updateCards();
+    currentPage = 1;
+    renderTable();
+  }
+
+  function sortOrdens() {
+    filteredOrdens.sort((a, b) => {
+      const av = a[sortField] || '';
+      const bv = b[sortField] || '';
+      return av < bv ? -sortDir : av > bv ? sortDir : 0;
+    });
+  }
+
+  function sortBy(field) {
+    if (sortField === field) sortDir *= -1;
+    else { sortField = field; sortDir = 1; }
+    sortOrdens();
+    renderTable();
+  }
+
+  function updateCards() {
+    document.getElementById('count-total').textContent = filteredOrdens.length;
+    document.getElementById('count-pendente').textContent = filteredOrdens.filter(o => o.status === 'Pendente').length;
+    document.getElementById('count-transito').textContent = filteredOrdens.filter(o => o.status === 'Em Trânsito').length;
+    document.getElementById('count-entregue').textContent = filteredOrdens.filter(o => o.status === 'Entregue').length;
+    document.getElementById('count-faturada').textContent = filteredOrdens.filter(o => o.status === 'Faturada').length;
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('ordens-body');
+    const start = (currentPage - 1) * PER_PAGE;
+    const page = filteredOrdens.slice(start, start + PER_PAGE);
+
+    if (page.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" class="empty-row"><i class="fas fa-inbox"></i> Nenhuma ordem encontrada.</td></tr>';
+      renderPagination();
+      return;
+    }
+
+    tbody.innerHTML = page.map(o => `
+      <tr class="ordem-row" onclick="abrirModal('${o.id}')">
+        <td><span class="oc-cell">${o.oc || '—'}</span>${o._local ? '<span class="local-badge" title="Não sincronizado">LOCAL</span>' : ''}</td>
+        <td>${o.pedido || '—'}</td>
+        <td>${o.data_emissao || '—'}</td>
+        <td>${o.remetente || '—'}</td>
+        <td>${o.motorista || '—'}</td>
+        <td>${o.destino || '—'}</td>
+        <td>${o.placa_cav || '—'}</td>
+        <td><span class="status-badge status-${statusClass(o.status)}">${o.status || '—'}</span></td>
+        <td class="actions-cell" onclick="event.stopPropagation()">
+          <button onclick="verPdf('${o.id}')" class="action-btn btn-pdf-sm" title="PDF"><i class="fas fa-file-pdf"></i></button>
+          <button onclick="duplicar('${o.id}')" class="action-btn btn-dup-sm" title="Duplicar"><i class="fas fa-copy"></i></button>
+          <button onclick="deletar('${o.id}', event)" class="action-btn btn-del-sm" title="Excluir"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>
+    `).join('');
+
+    renderPagination();
+  }
+
+  function statusClass(status) {
+    const map = { 'Pendente':'pendente','Agendada':'agendada','Carregando':'carregando',
+      'Em Trânsito':'transito','Entregue':'entregue','Faturada':'faturada','Cancelada':'cancelada' };
+    return map[status] || 'pendente';
+  }
+
+  function renderPagination() {
+    const total = Math.ceil(filteredOrdens.length / PER_PAGE);
+    const pg = document.getElementById('pagination');
+    if (total <= 1) { pg.innerHTML = ''; return; }
+    let html = '';
+    for (let i = 1; i <= total; i++) {
+      html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+    }
+    pg.innerHTML = html;
+  }
+
+  function goPage(p) { currentPage = p; renderTable(); }
+
+  function limparFiltros() {
+    document.getElementById('f-search').value = '';
+    document.getElementById('f-status').value = '';
+    document.getElementById('f-from').value = '';
+    document.getElementById('f-to').value = '';
+    filterOrdens();
+  }
+
+  // ─── Modal ───
+  async function abrirModal(id) {
+    const o = await Storage.getById(id);
+    if (!o) return;
+    currentModalId = id;
+
+    document.getElementById('modal-title').textContent = `Pedido: ${o.pedido || '—'}`;
+    document.getElementById('modal-oc').textContent = o.oc || '';
+    document.getElementById('modal-overlay').style.display = 'flex';
+
+    document.getElementById('modal-body').innerHTML = `
+      <div class="modal-section">
+        <h4><i class="fas fa-box"></i> Dados da Carga</h4>
+        <div class="modal-grid">
+          ${mRow('Remetente', o.remetente)} ${mRow('Cidade Origem', o.cidade_origem)}
+          ${mRow('Recebedor', o.recebedor)} ${mRow('Destino', o.destino)}
+          ${mRow('Mercadoria', o.mercadoria)} ${mRow('Peso Bruto', o.peso_bruto ? o.peso_bruto + ' kg' : '')}
+          ${mRow('Modalidade', o.modalidade_veiculo)} ${mRow('Data Agend.', o.data_agendamento)}
+          ${mRow('Terminal', o.terminal)}
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4><i class="fas fa-truck"></i> Dados do Veículo</h4>
+        <div class="modal-grid">
+          ${mRow('Placa Cavalo', o.placa_cav)} ${mRow('Carreta 1', o.placa_car1)}
+          ${mRow('Dolly', o.dolly)} ${mRow('Carreta 3', o.placa_car3)} ${mRow('UF', o.uf)}
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4><i class="fas fa-user"></i> Dados do Motorista</h4>
+        <div class="modal-grid">
+          ${mRow('Motorista', o.motorista)} ${mRow('Celular', o.celular)}
+          ${mRow('CPF', o.cpf)} ${mRow('RG', o.rg)} ${mRow('CNH', o.cnh)}
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4><i class="fas fa-dollar-sign"></i> Valores</h4>
+        <div class="modal-grid">
+          ${mRow('Valor/Ton', o.valor_ton ? 'R$ '+o.valor_ton : '')} ${mRow('Total Frete', o.total_frete)}
+          ${mRow('Pedágio', o.pedagio ? 'R$ '+o.pedagio : '')} ${mRow('Adiantamento', o.adiantamento ? 'R$ '+o.adiantamento : '')}
+          ${mRow('Saldo a Pagar', o.saldo_pagar)}
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4><i class="fas fa-info-circle"></i> Status e Observações</h4>
+        <div class="modal-grid">
+          ${mRow('Status', `<span class="status-badge status-${statusClass(o.status)}">${o.status || '—'}</span>`)}
+          ${mRow('Local Coleta', o.local_coleta)} ${mRow('Obs.', o.obs)}
+        </div>
+      </div>
+      <div class="modal-status-change">
+        <label><strong>Alterar Status:</strong></label>
+        <select id="modal-new-status" class="filter-input" style="width:220px;">
+          ${['Pendente','Agendada','Carregando','Em Trânsito','Entregue','Faturada','Cancelada']
+            .map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+    `;
+  }
+
+  function mRow(label, value) {
+    if (!value) return '';
+    return `<div class="modal-row"><span class="modal-label">${label}</span><span class="modal-value">${value}</span></div>`;
+  }
+
+  function fecharModal(e) {
+    if (!e || e.target === document.getElementById('modal-overlay') || e.currentTarget === document.getElementById('modal-overlay') && !e.target.closest('.modal-card')) {
+      document.getElementById('modal-overlay').style.display = 'none';
+      currentModalId = null;
+    }
+    if (!e) {
+      document.getElementById('modal-overlay').style.display = 'none';
+      currentModalId = null;
+    }
+  }
+
+  async function alterarStatusModal() {
+    if (!currentModalId) return;
+    const novoStatus = document.getElementById('modal-new-status').value;
+    await Storage.update(currentModalId, { status: novoStatus });
+    await loadOrdens();
+    fecharModal();
+    alert('Status atualizado com sucesso!');
+  }
+
+  function verPdfModal() {
+    if (currentModalId) verPdf(currentModalId);
+  }
+
+  function duplicarModal() {
+    if (currentModalId) duplicar(currentModalId);
+  }
+
+  async function deletarModal() {
+    if (!currentModalId) return;
+    if (!confirm('Excluir esta ordem? Essa ação não pode ser desfeita.')) return;
+    await Storage.remove(currentModalId);
+    fecharModal();
+    await loadOrdens();
+  }
+
+  // ─── Ações rápidas ───
+  function verPdf(id) {
+    window.open(`print.html?id=${id}`, '_blank');
+  }
+
+  function duplicar(id) {
+    if (!confirm('Deseja duplicar esta ordem? Uma nova O.C. será gerada automaticamente.')) return;
+    window.location.href = `index.html?duplicate=${id}`;
+  }
+
+  async function deletar(id, e) {
+    if (e) e.stopPropagation();
+    if (!confirm('Excluir esta ordem?')) return;
+    await Storage.remove(id);
+    await loadOrdens();
+  }
+
+  // ─── Exportar CSV ───
+  function exportarCSV() {
+    if (filteredOrdens.length === 0) { alert('Nenhuma ordem para exportar.'); return; }
+    const headers = ['OC','Pedido','Data','Remetente','Cidade Origem','Recebedor','Destino',
+      'Mercadoria','Peso','Modalidade','Placa Cav.','Placa Car.1','Dolly','Placa Car.3','UF',
+      'Motorista','Celular','CPF','RG','CNH','Valor/Ton','Total Frete','Pedágio','Adiantamento',
+      'Saldo','Status','Local Coleta','Obs'];
+    const fields = ['oc','pedido','data_emissao','remetente','cidade_origem','recebedor','destino',
+      'mercadoria','peso_bruto','modalidade_veiculo','placa_cav','placa_car1','dolly','placa_car3','uf',
+      'motorista','celular','cpf','rg','cnh','valor_ton','total_frete','pedagio','adiantamento',
+      'saldo_pagar','status','local_coleta','obs'];
+
+    let csv = headers.join(';') + '\n';
+    filteredOrdens.forEach(o => {
+      csv += fields.map(f => `"${(o[f] || '').toString().replace(/"/g,'""')}"`).join(';') + '\n';
+    });
+
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ordens-pianetto-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+</body>
+</html>
