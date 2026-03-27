@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Histórico de Ordens — Pianetto Transportes</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <img src="images/logo.png" alt="Pianetto Logo">
+  <span class="navbar-title">Pianetto Transportes e Logística</span>
+  <div class="navbar-links">
+    <a href="index.html">Nova Ordem</a>
+    <a href="historico.html" class="ativo">Histórico</a>
+    <a href="guia-pdf.html">📖 Guia PDF</a>
+  </div>
+</nav>
+<div id="status-conexao" class="status-banner offline">🟡 Verificando conexão...</div>
+
+<div class="container">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <h2 style="font-size:18px;color:#1a3a5c">📊 Histórico de Ordens</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-salvar btn-sm" onclick="sincronizarDados()">🔄 Sincronizar</button>
+      <button class="btn btn-oc btn-sm" onclick="exportarCSV()">📥 Exportar CSV</button>
+      <a href="index.html" class="btn btn-novo btn-sm">➕ Nova Ordem</a>
+    </div>
+  </div>
+
+  <!-- Cards resumo -->
+  <div class="cards-resumo" id="cards-resumo"></div>
+
+  <!-- Filtros -->
+  <div class="filtros-bar">
+    <div class="form-group">
+      <label>Busca</label>
+      <input type="text" id="filtro-busca" placeholder="Pedido, motorista, placa...">
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="filtro-status">
+        <option value="">Todos</option>
+        <option>Pendente</option>
+        <option>Em Transporte</option>
+        <option>Entregue</option>
+        <option>Cancelado</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Data Início</label>
+      <input type="date" id="filtro-inicio">
+    </div>
+    <div class="form-group">
+      <label>Data Fim</label>
+      <input type="date" id="filtro-fim">
+    </div>
+    <button class="btn btn-salvar btn-sm" onclick="filtrar()">🔍 Filtrar</button>
+    <button class="btn btn-limpar btn-sm" onclick="limparFiltros()">✕ Limpar</button>
+  </div>
+
+  <!-- Tabela -->
+  <div style="overflow-x:auto;background:#fff;border-radius:8px;border:1px solid #cbd5e1">
+    <table class="tabela-hist">
+      <thead>
+        <tr>
+          <th onclick="ordenarPor('oc')">O.C. ↕</th>
+          <th onclick="ordenarPor('pedido')">Pedido ↕</th>
+          <th onclick="ordenarPor('data_emissao')">Data ↕</th>
+          <th onclick="ordenarPor('motorista')">Motorista ↕</th>
+          <th onclick="ordenarPor('remetente')">Remetente ↕</th>
+          <th onclick="ordenarPor('destino')">Destino ↕</th>
+          <th>Veículo</th>
+          <th onclick="ordenarPor('status')">Status ↕</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-corpo"></tbody>
+    </table>
+  </div>
+  <div class="paginacao" id="paginacao"></div>
+  <div id="sem-dados" style="text-align:center;color:#94a3b8;padding:32px;display:none">
+    Nenhuma ordem encontrada.
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)fecharModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <img src="images/logo.png" alt="Logo">
+      <h2 id="modal-titulo">Detalhes da Ordem</h2>
+      <button class="modal-close" onclick="fecharModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-corpo"></div>
+    <div class="modal-acoes" id="modal-acoes"></div>
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script>
+  let todasOrdens = [];
+  let paginaAtual = 1;
+  const porPagina = 15;
+  let ordenacao = { campo: 'created_at', asc: false };
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    await verificarConexao();
+    await carregar();
+    ['filtro-busca','filtro-status','filtro-inicio','filtro-fim'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', filtrar);
+    });
+    document.getElementById('filtro-busca').addEventListener('input', filtrar);
+  });
+
+  async function carregar() {
+    const ordens = await listarOrdens(1, 1000, {});
+    todasOrdens = ordens;
+    atualizarResumo();
+    renderizarTabela();
+  }
+
+  function atualizarResumo() {
+    const total     = todasOrdens.length;
+    const pendente  = todasOrdens.filter(o => o.status === 'Pendente').length;
+    const transito  = todasOrdens.filter(o => o.status === 'Em Transporte').length;
+    const entregue  = todasOrdens.filter(o => o.status === 'Entregue').length;
+    document.getElementById('cards-resumo').innerHTML = `
+      <div class="card-resumo"><div class="num">${total}</div><div class="leg">Total</div></div>
+      <div class="card-resumo"><div class="num" style="color:#ca8a04">${pendente}</div><div class="leg">Pendentes</div></div>
+      <div class="card-resumo"><div class="num" style="color:#1e40af">${transito}</div><div class="leg">Em Transporte</div></div>
+      <div class="card-resumo"><div class="num" style="color:#15803d">${entregue}</div><div class="leg">Entregues</div></div>
+    `;
+  }
+
+  function filtrarOrdens() {
+    let arr = [...todasOrdens];
+    const busca  = document.getElementById('filtro-busca').value.toLowerCase();
+    const status = document.getElementById('filtro-status').value;
+    const ini    = document.getElementById('filtro-inicio').value;
+    const fim    = document.getElementById('filtro-fim').value;
+    if (busca) arr = arr.filter(o =>
+      (o.pedido||'').toLowerCase().includes(busca) ||
+      (o.oc||'').toLowerCase().includes(busca) ||
+      (o.motorista||'').toLowerCase().includes(busca) ||
+      (o.remetente||'').toLowerCase().includes(busca) ||
+      (o.destino||'').toLowerCase().includes(busca) ||
+      (o.placa_cav||'').toLowerCase().includes(busca)
+    );
+    if (status) arr = arr.filter(o => o.status === status);
+    if (ini) arr = arr.filter(o => {
+      const d = new Date(o.data_emissao || o.created_at);
+      return d >= new Date(ini);
+    });
+    if (fim) arr = arr.filter(o => {
+      const d = new Date(o.data_emissao || o.created_at);
+      return d <= new Date(fim + 'T23:59:59');
+    });
+    // Ordenação
+    arr.sort((a, b) => {
+      let va = a[ordenacao.campo] || '';
+      let vb = b[ordenacao.campo] || '';
+      if (typeof va === 'number') return ordenacao.asc ? va - vb : vb - va;
+      return ordenacao.asc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+    });
+    return arr;
+  }
+
+  function renderizarTabela() {
+    const arr = filtrarOrdens();
+    const inicio = (paginaAtual - 1) * porPagina;
+    const pagina = arr.slice(inicio, inicio + porPagina);
+    const tbody = document.getElementById('tabela-corpo');
+    const semDados = document.getElementById('sem-dados');
+    if (pagina.length === 0) {
+      tbody.innerHTML = '';
+      semDados.style.display = '';
+    } else {
+      semDados.style.display = 'none';
+      tbody.innerHTML = pagina.map(o => `
+        <tr>
+          <td><span class="oc-badge">${o.oc||'—'}</span>${o._local?'<span class="badge badge-local" style="margin-left:4px">local</span>':''}</td>
+          <td>${o.pedido||'—'}</td>
+          <td>${o.data_emissao||'—'}</td>
+          <td>${o.motorista||'—'}</td>
+          <td>${o.remetente||'—'}</td>
+          <td>${o.destino||'—'}</td>
+          <td>${o.placa_cav||'—'}</td>
+          <td><span class="badge ${badgeClass(o.status)}">${o.status||'—'}</span></td>
+          <td>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <button class="btn btn-sm btn-salvar" onclick="verDetalhes('${o.id}')">👁</button>
+              <button class="btn btn-sm btn-pdf" onclick="abrirPDF('${o.id}')">🖨️ PDF</button>
+              <button class="btn btn-sm btn-duplicar" onclick="duplicarOrdem('${o.id}')">🔁</button>
+              <button class="btn btn-sm btn-danger" onclick="excluirOrdem('${o.id}')">🗑</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+    renderizarPaginacao(arr.length);
+  }
+
+  function renderizarPaginacao(total) {
+    const paginas = Math.ceil(total / porPagina);
+    const div = document.getElementById('paginacao');
+    if (paginas <= 1) { div.innerHTML = ''; return; }
+    let html = `<button onclick="irPara(${paginaAtual-1})" ${paginaAtual===1?'disabled':''}>‹</button>`;
+    for (let i = 1; i <= paginas; i++) {
+      if (i === 1 || i === paginas || (i >= paginaAtual-2 && i <= paginaAtual+2)) {
+        html += `<button class="${i===paginaAtual?'ativo':''}" onclick="irPara(${i})">${i}</button>`;
+      } else if (i === paginaAtual-3 || i === paginaAtual+3) {
+        html += `<span>…</span>`;
+      }
+    }
+    html += `<button onclick="irPara(${paginaAtual+1})" ${paginaAtual===paginas?'disabled':''}>›</button>`;
+    div.innerHTML = html;
+  }
+
+  function irPara(p) {
+    const arr = filtrarOrdens();
+    const max = Math.ceil(arr.length / porPagina);
+    if (p < 1 || p > max) return;
+    paginaAtual = p;
+    renderizarTabela();
+  }
+
+  function filtrar() { paginaAtual = 1; renderizarTabela(); }
+  function limparFiltros() {
+    ['filtro-busca','filtro-status','filtro-inicio','filtro-fim'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    filtrar();
+  }
+
+  function ordenarPor(campo) {
+    if (ordenacao.campo === campo) ordenacao.asc = !ordenacao.asc;
+    else { ordenacao.campo = campo; ordenacao.asc = true; }
+    renderizarTabela();
+  }
+
+  function badgeClass(status) {
+    const m = { 'Pendente':'badge-pendente','Em Transporte':'badge-transito','Entregue':'badge-entregue','Cancelado':'badge-cancelado' };
+    return m[status] || 'badge-pendente';
+  }
+
+  async function verDetalhes(id) {
+    const o = await buscarOrdem(id);
+    if (!o) return;
+    document.getElementById('modal-titulo').textContent = `Ordem ${o.oc || o.pedido || id}`;
+    document.getElementById('modal-corpo').innerHTML = `
+      <div class="detalhe-grid">
+        <div class="detalhe-item"><label>O.C.</label><span class="oc-badge">${o.oc||'—'}</span></div>
+        <div class="detalhe-item"><label>Pedido</label><span>${o.pedido||'—'}</span></div>
+        <div class="detalhe-item"><label>Data Emissão</label><span>${o.data_emissao||'—'}</span></div>
+        <div class="detalhe-item"><label>Status</label><span class="badge ${badgeClass(o.status)}">${o.status||'—'}</span></div>
+        <div class="detalhe-item"><label>Remetente</label><span>${o.remetente||'—'}</span></div>
+        <div class="detalhe-item"><label>Destino</label><span>${o.destino||'—'}</span></div>
+        <div class="detalhe-item"><label>Motorista</label><span>${o.motorista||'—'}</span></div>
+        <div class="detalhe-item"><label>CPF</label><span>${o.cpf||'—'}</span></div>
+        <div class="detalhe-item"><label>Placa Cav.</label><span>${o.placa_cav||'—'}</span></div>
+        <div class="detalhe-item"><label>Mercadoria</label><span>${o.mercadoria||'—'}</span></div>
+        <div class="detalhe-item"><label>Peso Bruto</label><span>${o.peso_bruto||'—'} kg</span></div>
+        <div class="detalhe-item"><label>Data Agend.</label><span>${o.data_agend||'—'}</span></div>
+      </div>
+      <div style="margin-top:10px">
+        <label style="font-size:11px;color:#94a3b8;text-transform:uppercase">Alterar Status</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+          ${['Pendente','Em Transporte','Entregue','Cancelado'].map(s=>
+            `<button class="btn btn-sm ${o.status===s?'btn-salvar':'btn-limpar'}" onclick="alterarStatus('${id}','${s}')">${s}</button>`
+          ).join('')}
+        </div>
+      </div>
+    `;
+    document.getElementById('modal-acoes').innerHTML = `
+      <button class="btn btn-pdf" onclick="abrirPDF('${id}');fecharModal()">🖨️ Reimprimir / PDF</button>
+      <button class="btn btn-duplicar" onclick="duplicarOrdem('${id}');fecharModal()">🔁 Duplicar Ordem</button>
+      <button class="btn btn-danger btn-sm" onclick="excluirOrdem('${id}');fecharModal()">🗑 Excluir</button>
+      <button class="btn btn-limpar btn-sm" onclick="fecharModal()" style="margin-left:auto">Fechar</button>
+    `;
+    document.getElementById('modal').style.display = 'flex';
+  }
+
+  function fecharModal() { document.getElementById('modal').style.display = 'none'; }
+
+  async function alterarStatus(id, status) {
+    await atualizarOrdem(id, { status });
+    await carregar();
+    fecharModal();
+  }
+
+  function abrirPDF(id) {
+    window.open(`print.html?id=${id}`, '_blank');
+  }
+
+  async function duplicarOrdem(id) {
+    const o = await buscarOrdem(id);
+    if (!o) return;
+    if (!confirm(`Duplicar ordem ${o.oc||o.pedido}?`)) return;
+    sessionStorage.setItem('duplicar_dados', JSON.stringify(o));
+    window.location.href = 'index.html';
+  }
+
+  async function excluirOrdem(id) {
+    if (!confirm('Excluir esta ordem?')) return;
+    await deletarOrdem(id);
+    await carregar();
+  }
+
+  async function sincronizarDados() {
+    const n = await sincronizar();
+    alert(n > 0 ? `${n} ordem(ns) sincronizada(s)!` : 'Nada para sincronizar.');
+    await carregar();
+  }
+
+  function exportarCSV() {
+    const arr = filtrarOrdens();
+    const cols = ['oc','pedido','data_emissao','status','remetente','destino','motorista','cpf','placa_cav','mercadoria','peso_bruto'];
+    const head = cols.join(';') + '\n';
+    const rows = arr.map(o => cols.map(c => `"${(o[c]||'').toString().replace(/"/g,'""')}"`).join(';')).join('\n');
+    const blob = new Blob(['\ufeff'+head+rows], { type:'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'ordens_pianetto.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+</body>
+</html>

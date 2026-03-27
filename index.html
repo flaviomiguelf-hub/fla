@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ordem de Coleta — Pianetto Transportes</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* Ajustes extras para garantir 1 página no PDF */
+  @media print {
+    .form-wrapper {
+      page-break-inside: avoid;
+      overflow: hidden;
+    }
+    .form-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+  }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <img src="images/logo.png" alt="Pianetto Logo">
+  <span class="navbar-title">Pianetto Transportes e Logística</span>
+  <div class="navbar-links">
+    <a href="index.html" class="ativo">Nova Ordem</a>
+    <a href="historico.html">Histórico</a>
+    <a href="guia-pdf.html">📖 Guia PDF</a>
+  </div>
+</nav>
+<div id="status-conexao" class="status-banner offline">🟡 Verificando conexão...</div>
+
+<div class="container">
+  <!-- Banner de duplicação -->
+  <div id="banner-dup" class="banner-duplicacao" style="display:none">
+    ⚠️ <strong>Ordem Duplicada</strong> — campos importantes estão bloqueados.
+    OC de origem: <span id="oc-origem"></span>
+    <button class="btn btn-sm" style="margin-left:auto" onclick="desbloquearTodos()">🔓 Desbloquear Todos</button>
+  </div>
+
+  <!-- Botões de ação -->
+  <div class="acoes no-print">
+    <button class="btn btn-pdf" onclick="exportarPDF()">🖨️ Exportar PDF</button>
+    <button class="btn btn-salvar" onclick="salvarNoHistorico()">💾 Salvar no Histórico</button>
+    <button class="btn btn-limpar" onclick="limparFormulario()">🗑️ Limpar</button>
+    <button class="btn btn-novo" onclick="novaOrdem()">➕ Nova Ordem</button>
+  </div>
+
+  <div class="form-wrapper">
+    <!-- CABEÇALHO -->
+    <div class="form-header">
+      <div class="logo-box">
+        <img src="images/logo.png" alt="Pianetto Transportes e Logística">
+      </div>
+      <div class="header-info">
+        <h1>PIANETTO TRANSPORTES E LOGÍSTICA</h1>
+        <p>CNPJ 43.976.512/0001-09 | INSC. EST 20.101.161-1</p>
+        <p>ROD. BR 060 KM 388 SALA 139 — RIO VERDE/GO</p>
+        <p>comercial.goianesia@pianettotransportes.com.br</p>
+      </div>
+    </div>
+
+    <!-- PEDIDO / OC -->
+    <div class="pedido-bar">
+      <div>
+        <label>PEDIDO</label>
+        <input type="text" id="campo-pedido" class="val" placeholder="PEDIDO-2026-0001">
+      </div>
+      <div>
+        <label>O.C.</label>
+        <span class="val oc-num" id="campo-oc">—</span>
+      </div>
+      <div>
+        <label>DATA DE EMISSÃO</label>
+        <span class="val" id="data-emissao"></span>
+      </div>
+    </div>
+
+    <!-- DADOS DA CARGA -->
+    <div class="card">
+      <div class="card-header">📦 Dados da Carga</div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group" id="grp-remetente">
+            <label>Remetente</label>
+            <input type="text" id="remetente" placeholder="Nome do remetente">
+          </div>
+          <div class="form-group" id="grp-cidade-orig">
+            <label>Cidade de Origem</label>
+            <input type="text" id="cidade_orig" placeholder="Cidade/UF">
+          </div>
+          <div class="form-group" id="grp-recebedor">
+            <label>Recebedor</label>
+            <input type="text" id="recebedor" placeholder="Nome do recebedor">
+          </div>
+          <div class="form-group" id="grp-destino">
+            <label>Destino</label>
+            <input type="text" id="destino" placeholder="Cidade/UF de destino">
+          </div>
+          <div class="form-group" id="grp-mercadoria">
+            <label>Mercadoria</label>
+            <input type="text" id="mercadoria" placeholder="Tipo de mercadoria">
+          </div>
+          <div class="form-group" id="grp-peso">
+            <label>Peso Bruto (kg)</label>
+            <input type="number" id="peso_bruto" placeholder="Ex: 47000">
+          </div>
+          <div class="form-group" id="grp-mod-veiculo">
+            <label>Modalidade do Veículo</label>
+            <select id="mod_veiculo">
+              <option value="">Selecione...</option>
+              <option>RODOCAÇAMBA</option>
+              <option>CARRETA</option>
+              <option>VANDERLEIA</option>
+              <option>BITREM</option>
+              <option>TREMINHÃO</option>
+              <option>TRUCK</option>
+              <option>TOCO</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Terminal</label>
+            <input type="text" id="terminal" placeholder="Terminal">
+          </div>
+          <div class="form-group">
+            <label>Data Agendamento</label>
+            <input type="date" id="data_agend">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DADOS DO VEÍCULO -->
+    <div class="card">
+      <div class="card-header">🚛 Dados do Veículo</div>
+      <div class="card-body">
+        <table class="placa-table">
+          <tr>
+            <th>Placa Cav.</th>
+            <th>Placa Car.1</th>
+            <th>Dolly</th>
+            <th>Placa Car.3</th>
+            <th>UF</th>
+          </tr>
+          <tr>
+            <td id="grp-placa-cav"><input type="text" id="placa_cav" placeholder="ABC1234"></td>
+            <td id="grp-placa-car1"><input type="text" id="placa_car1" placeholder="ABC1234"></td>
+            <td id="grp-dolly"><input type="text" id="dolly" placeholder="ABC1234"></td>
+            <td id="grp-placa-car3"><input type="text" id="placa_car3" placeholder="ABC1234"></td>
+            <td id="grp-uf"><input type="text" id="uf" placeholder="GO" maxlength="2"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- DADOS DO MOTORISTA -->
+    <div class="card">
+      <div class="card-header">👤 Dados do Motorista</div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group full" id="grp-motorista">
+            <label>Motorista</label>
+            <input type="text" id="motorista" placeholder="Nome completo do motorista">
+          </div>
+          <div class="form-group" id="grp-celular">
+            <label>Celular</label>
+            <input type="tel" id="celular" placeholder="(00) 00000-0000">
+          </div>
+          <div class="form-group" id="grp-cpf">
+            <label>CPF</label>
+            <input type="text" id="cpf" placeholder="000.000.000-00">
+          </div>
+          <div class="form-group" id="grp-rg">
+            <label>RG</label>
+            <input type="text" id="rg" placeholder="RG do motorista">
+          </div>
+          <div class="form-group" id="grp-cnh">
+            <label>CNH</label>
+            <input type="text" id="cnh" placeholder="Número da CNH">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOCAL DE COLETA / OBS -->
+    <div class="card">
+      <div class="card-header">📍 Local de Coleta / Observações</div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Local de Coleta</label>
+            <input type="text" id="local_coleta" placeholder="Endereço ou local de coleta">
+          </div>
+          <div class="form-group full">
+            <label>Observações</label>
+            <textarea id="obs" rows="2" placeholder="Observações adicionais..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSINATURAS -->
+    <div class="card">
+      <div class="card-header">✍️ Assinaturas</div>
+      <div class="assinaturas">
+        <div class="assinatura-box">
+          <div class="assinatura-linha" id="ass-motorista">MOTORISTA</div>
+          <div class="assinatura-cargo">MOTORISTA</div>
+        </div>
+        <div class="assinatura-box">
+          <div class="assinatura-linha">ANALISTA DE LOGÍSTICA</div>
+          <div class="assinatura-cargo">ANALISTA DE LOGÍSTICA — PIANETTO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RODAPÉ -->
+    <div class="form-footer">
+      PIANETTO TRANSPORTES E LOGÍSTICA | CNPJ: 43.976.512/0001-09 | ROD. BR 060 KM 388 — RIO VERDE/GO
+    </div>
+  </div><!-- /.form-wrapper -->
+</div><!-- /.container -->
+
+<script src="js/storage.js"></script>
+<script>
+  // ---- Inicialização ----
+  const CAMPOS_BLOQUEADOS_IDS = [
+    'remetente','cidade_orig','recebedor','destino','mercadoria','peso_bruto',
+    'placa_cav','placa_car1','dolly','placa_car3','uf',
+    'motorista','celular','cpf','rg','cnh','mod_veiculo'
+  ];
+  const GRUPOS_BLOQUEADOS = [
+    'grp-remetente','grp-cidade-orig','grp-recebedor','grp-destino',
+    'grp-mercadoria','grp-peso','grp-mod-veiculo',
+    'grp-placa-cav','grp-placa-car1','grp-dolly','grp-placa-car3','grp-uf',
+    'grp-motorista','grp-celular','grp-cpf','grp-rg','grp-cnh'
+  ];
+
+  let emDuplicacao = false;
+  let ocAtual = '';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Data
+    const hoje = new Date();
+    document.getElementById('data-emissao').textContent =
+      hoje.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+    // Verificar conexão
+    await verificarConexao();
+
+    // Checar se é duplicação
+    const dup = sessionStorage.getItem('duplicar_dados');
+    if (dup) {
+      const dados = JSON.parse(dup);
+      sessionStorage.removeItem('duplicar_dados');
+      preencherDuplicacao(dados);
+    } else {
+      // Nova ordem
+      document.getElementById('campo-pedido').value = gerarPedidoSugerido();
+      ocAtual = gerarOC();
+      document.getElementById('campo-oc').textContent = ocAtual;
+    }
+
+    // Máscaras
+    mascaraCPF();
+    mascaraCelular();
+    mascaraPlacas();
+  });
+
+  function preencherDuplicacao(dados) {
+    emDuplicacao = true;
+    document.getElementById('banner-dup').style.display = 'flex';
+    document.getElementById('oc-origem').textContent = dados.oc || '—';
+
+    // Nova OC
+    ocAtual = gerarOC();
+    document.getElementById('campo-oc').textContent = ocAtual;
+    document.getElementById('campo-pedido').value = gerarPedidoSugerido();
+
+    // Preencher campos
+    const map = {
+      remetente:'remetente', cidade_orig:'cidade_orig', recebedor:'recebedor',
+      destino:'destino', mercadoria:'mercadoria', peso_bruto:'peso_bruto',
+      mod_veiculo:'mod_veiculo', terminal:'terminal',
+      placa_cav:'placa_cav', placa_car1:'placa_car1', dolly:'dolly',
+      placa_car3:'placa_car3', uf:'uf',
+      motorista:'motorista', celular:'celular', cpf:'cpf', rg:'rg', cnh:'cnh',
+      obs:'obs', local_coleta:'local_coleta'
+    };
+    for (const [k, id] of Object.entries(map)) {
+      const el = document.getElementById(id);
+      if (el && dados[k]) el.value = dados[k];
+    }
+
+    // Bloquear campos sensíveis
+    GRUPOS_BLOQUEADOS.forEach(gid => {
+      const g = document.getElementById(gid);
+      if (!g) return;
+      g.classList.add('campo-bloqueado');
+      const inp = g.querySelector('input, select, textarea');
+      if (inp) inp.disabled = true;
+    });
+
+    // Placas na tabela
+    ['grp-placa-cav','grp-placa-car1','grp-dolly','grp-placa-car3','grp-uf'].forEach(gid => {
+      const td = document.getElementById(gid);
+      if (!td) return;
+      td.classList.add('campo-bloqueado');
+      const inp = td.querySelector('input');
+      if (inp) inp.disabled = true;
+    });
+  }
+
+  function desbloquearTodos() {
+    if (!confirm('Desbloquear todos os campos?')) return;
+    document.querySelectorAll('.campo-bloqueado').forEach(el => {
+      el.classList.remove('campo-bloqueado');
+      const inp = el.querySelector('input, select, textarea');
+      if (inp) inp.disabled = false;
+    });
+  }
+
+  function exportarPDF() {
+    document.title = `OC-${document.getElementById('campo-oc').textContent}-${document.getElementById('motorista').value || 'ordem'}`;
+    window.print();
+  }
+
+  async function salvarNoHistorico() {
+    const dados = coletarDados();
+    if (!dados.motorista && !dados.remetente) {
+      alert('Preencha ao menos o Motorista ou o Remetente para salvar.');
+      return;
+    }
+    try {
+      await salvarOrdem(dados);
+      alert('✅ Ordem salva no histórico!');
+    } catch (e) {
+      alert('Erro ao salvar: ' + e.message);
+    }
+  }
+
+  function coletarDados() {
+    return {
+      pedido:       document.getElementById('campo-pedido').value,
+      oc:           ocAtual,
+      data_emissao: document.getElementById('data-emissao').textContent,
+      remetente:    document.getElementById('remetente').value,
+      cidade_orig:  document.getElementById('cidade_orig').value,
+      recebedor:    document.getElementById('recebedor').value,
+      destino:      document.getElementById('destino').value,
+      mercadoria:   document.getElementById('mercadoria').value,
+      peso_bruto:   document.getElementById('peso_bruto').value,
+      mod_veiculo:  document.getElementById('mod_veiculo').value,
+      terminal:     document.getElementById('terminal').value,
+      data_agend:   document.getElementById('data_agend').value,
+      placa_cav:    document.getElementById('placa_cav').value,
+      placa_car1:   document.getElementById('placa_car1').value,
+      dolly:        document.getElementById('dolly').value,
+      placa_car3:   document.getElementById('placa_car3').value,
+      uf:           document.getElementById('uf').value,
+      motorista:    document.getElementById('motorista').value,
+      celular:      document.getElementById('celular').value,
+      cpf:          document.getElementById('cpf').value,
+      rg:           document.getElementById('rg').value,
+      cnh:          document.getElementById('cnh').value,
+      local_coleta: document.getElementById('local_coleta').value,
+      obs:          document.getElementById('obs').value,
+      status:       'Pendente'
+    };
+  }
+
+  function limparFormulario() {
+    if (!confirm('Limpar todos os campos?')) return;
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      if (el.type === 'checkbox') el.checked = false;
+      else if (el.id !== 'campo-pedido') el.value = '';
+    });
+    document.getElementById('banner-dup').style.display = 'none';
+    emDuplicacao = false;
+    // Nova OC
+    ocAtual = gerarOC();
+    document.getElementById('campo-oc').textContent = ocAtual;
+    document.querySelectorAll('.campo-bloqueado').forEach(el => {
+      el.classList.remove('campo-bloqueado');
+      const inp = el.querySelector('input, select, textarea');
+      if (inp) inp.disabled = false;
+    });
+  }
+
+  function novaOrdem() {
+    limparFormulario();
+    document.getElementById('campo-pedido').value = gerarPedidoSugerido();
+  }
+
+  // --- Máscaras ---
+  function mascaraCPF() {
+    document.getElementById('cpf').addEventListener('input', function() {
+      let v = this.value.replace(/\D/g,'').slice(0,11);
+      v = v.replace(/(\d{3})(\d)/,'$1.$2');
+      v = v.replace(/(\d{3})(\d)/,'$1.$2');
+      v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+      this.value = v;
+    });
+  }
+  function mascaraCelular() {
+    document.getElementById('celular').addEventListener('input', function() {
+      let v = this.value.replace(/\D/g,'').slice(0,11);
+      if (v.length <= 10) v = v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+      else v = v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+      this.value = v;
+    });
+  }
+  function mascaraPlacas() {
+    ['placa_cav','placa_car1','dolly','placa_car3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+      });
+    });
+    const uf = document.getElementById('uf');
+    if (uf) uf.addEventListener('input', function() {
+      this.value = this.value.toUpperCase().slice(0,2);
+    });
+  }
+</script>
+</body>
+</html>

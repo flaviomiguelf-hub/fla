@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia: Como Exportar PDF — Pianetto</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { background: #f0f2f5; }
+
+  .guia-header {
+    background: linear-gradient(135deg, #1a3a5c, #2563a8);
+    color: #fff;
+    padding: 32px 40px;
+    text-align: center;
+  }
+  .guia-header img { height: 64px; margin-bottom: 12px; filter: brightness(0) invert(1); }
+  .guia-header h1 { font-size: 26px; margin-bottom: 6px; }
+  .guia-header p  { opacity: .8; font-size: 14px; }
+
+  .guia-container { max-width: 960px; margin: 0 auto; padding: 28px 16px; }
+
+  /* Card de resumo de compatibilidade */
+  .compat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .compat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    border: 2px solid transparent;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .compat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+  .compat-card.verde { border-color: #16a34a; }
+  .compat-card.amarelo { border-color: #ca8a04; }
+  .compat-card.laranja { border-color: #ea580c; }
+  .compat-card.cinza { border-color: #94a3b8; }
+  .compat-card .icon { font-size: 40px; display: block; margin-bottom: 8px; }
+  .compat-card .browser { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .compat-card .nivel  { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 20px; display: inline-block; }
+  .nivel-otimo    { background: #dcfce7; color: #15803d; }
+  .nivel-bom      { background: #dbeafe; color: #1e40af; }
+  .nivel-parcial  { background: #fef9c3; color: #854d0e; }
+  .nivel-limitado { background: #f1f5f9; color: #475569; }
+  .compat-card .detalhe { font-size: 12px; color: #64748b; margin-top: 6px; }
+
+  /* Seções de guia por navegador */
+  .browser-section {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  }
+  .browser-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .browser-header .icon { font-size: 28px; }
+  .browser-header .badge-recomendado {
+    margin-left: auto;
+    background: rgba(255,255,255,.25);
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+  }
+
+  .bg-chrome  { background: linear-gradient(135deg, #1a73e8, #174ea6); }
+  .bg-edge    { background: linear-gradient(135deg, #0078d4, #004578); }
+  .bg-firefox { background: linear-gradient(135deg, #e66000, #ff9500); }
+  .bg-safari  { background: linear-gradient(135deg, #007aff, #5856d6); }
+
+  .steps { padding: 20px; }
+  .step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    min-width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #1a3a5c;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-content { flex: 1; }
+  .step-content .titulo { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+  .step-content .desc   { font-size: 13px; color: #475569; line-height: 1.5; }
+  .step-content .dica   {
+    background: #eff6ff;
+    border-left: 3px solid #2563a8;
+    padding: 6px 10px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: #1e40af;
+    margin-top: 6px;
+  }
+  .step-content .alerta {
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    padding: 6px 10px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: #92400e;
+    margin-top: 6px;
+  }
+
+  /* Mockup de tela de impressão */
+  .print-mockup {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    margin: 8px 0;
+    font-size: 12px;
+    font-family: monospace;
+  }
+  .print-mockup .linha { padding: 3px 0; display: flex; align-items: center; gap: 8px; }
+  .print-mockup .key   { color: #64748b; min-width: 140px; }
+  .print-mockup .val   { color: #1e293b; font-weight: 600; }
+  .print-mockup .val.destaque { color: #dc2626; }
+  .print-mockup .separador { border-top: 1px dashed #cbd5e1; margin: 6px 0; }
+
+  /* Comparativo */
+  .comparativo {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    overflow-x: auto;
+  }
+  .comparativo h2 { font-size: 17px; color: #1a3a5c; margin-bottom: 14px; }
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .comp-table th {
+    background: #1a3a5c;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 12px;
+  }
+  .comp-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+  }
+  .comp-table tr:hover td { background: #f8faff; }
+  .check  { color: #16a34a; font-weight: 700; font-size: 16px; }
+  .cross  { color: #dc2626; font-weight: 700; font-size: 16px; }
+  .warn   { color: #ca8a04; font-weight: 700; font-size: 16px; }
+
+  /* Dica Universal */
+  .dica-universal {
+    background: linear-gradient(135deg, #1a3a5c, #2563a8);
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .dica-universal h2 { font-size: 17px; margin-bottom: 12px; }
+  .dica-universal ul { list-style: none; padding: 0; }
+  .dica-universal li { padding: 5px 0; font-size: 13px; display: flex; gap: 8px; }
+  .dica-universal li::before { content: '✅'; flex-shrink: 0; }
+
+  /* Botões de ação */
+  .acoes-guia {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;
+  }
+  .btn-guia {
+    padding: 10px 20px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    transition: opacity .2s;
+  }
+  .btn-guia:hover { opacity: .88; }
+  .btn-azul   { background: #1a3a5c; color: #fff; }
+  .btn-verde  { background: #16a34a; color: #fff; }
+  .btn-cinza  { background: #e2e8f0; color: #1e293b; }
+
+  /* Seção FAQ */
+  .faq { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.07); margin-bottom: 24px; }
+  .faq h2 { font-size: 17px; color: #1a3a5c; margin-bottom: 14px; }
+  .faq-item { border-bottom: 1px solid #e2e8f0; padding: 12px 0; }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-item .pergunta { font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 5px; cursor: pointer; }
+  .faq-item .resposta { font-size: 13px; color: #475569; line-height: 1.6; }
+
+  @media print {
+    .navbar, .acoes-guia { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <img src="images/logo.png" alt="Pianetto Logo">
+  <span class="navbar-title">Pianetto Transportes e Logística</span>
+  <div class="navbar-links">
+    <a href="index.html">Nova Ordem</a>
+    <a href="historico.html">Histórico</a>
+    <a href="guia-pdf.html" class="ativo">Guia PDF</a>
+  </div>
+</nav>
+
+<!-- Cabeçalho do guia -->
+<div class="guia-header">
+  <img src="images/logo.png" alt="Pianetto">
+  <h1>🖨️ Como Exportar PDF em Diferentes Navegadores</h1>
+  <p>Guia completo para gerar o PDF da ordem em 1 página A4</p>
+</div>
+
+<div class="guia-container">
+
+  <!-- Ações -->
+  <div class="acoes-guia">
+    <a href="index.html" class="btn-guia btn-azul">📋 Abrir Formulário</a>
+    <a href="historico.html" class="btn-guia btn-verde">📊 Ver Histórico</a>
+    <a href="guia-pdf.html" class="btn-guia btn-cinza" onclick="window.print()">🖨️ Imprimir Este Guia</a>
+  </div>
+
+  <!-- Compatibilidade -->
+  <h2 style="font-size:18px;color:#1a3a5c;margin-bottom:14px">📊 Compatibilidade por Navegador</h2>
+  <div class="compat-grid">
+    <div class="compat-card verde">
+      <span class="icon">🟢</span>
+      <div class="browser">Google Chrome</div>
+      <span class="nivel nivel-otimo">✅ Ótimo</span>
+      <div class="detalhe">Melhor opção para PDF. "Salvar como PDF" nativo. Resultado: 1 página A4 perfeita.</div>
+    </div>
+    <div class="compat-card verde">
+      <span class="icon">🔵</span>
+      <div class="browser">Microsoft Edge</div>
+      <span class="nivel nivel-otimo">✅ Ótimo</span>
+      <div class="detalhe">Baseado em Chromium. Resultado idêntico ao Chrome. Totalmente compatível.</div>
+    </div>
+    <div class="compat-card amarelo">
+      <span class="icon">🟠</span>
+      <div class="browser">Mozilla Firefox</div>
+      <span class="nivel nivel-bom">🔵 Bom</span>
+      <div class="detalhe">Funciona bem. Pode precisar ajustar margens manualmente. Resultado satisfatório.</div>
+    </div>
+    <div class="compat-card cinza">
+      <span class="icon">🍎</span>
+      <div class="browser">Safari (Mac/iOS)</div>
+      <span class="nivel nivel-parcial">⚠️ Parcial</span>
+      <div class="detalhe">Funciona, mas pode dividir em 2 páginas. Usar no Mac com configuração de papel.</div>
+    </div>
+    <div class="compat-card cinza">
+      <span class="icon">📱</span>
+      <div class="browser">Chrome Mobile</div>
+      <span class="nivel nivel-parcial">⚠️ Parcial</span>
+      <div class="detalhe">Básico. Recomendado usar no computador para melhor resultado de layout.</div>
+    </div>
+  </div>
+
+  <!-- Dica Universal -->
+  <div class="dica-universal">
+    <h2>⭐ Dica Universal — Antes de Imprimir em Qualquer Navegador</h2>
+    <ul>
+      <li>Desmarque a opção "Cabeçalhos e Rodapés" para não adicionar texto extra do navegador</li>
+      <li>Escolha o tamanho de papel A4 e orientação Retrato (vertical)</li>
+      <li>Selecione "Sem margens" ou "Mínimo" para aproveitar melhor o espaço</li>
+      <li>No destino, escolha "Salvar como PDF" para baixar o arquivo</li>
+      <li>Verifique a pré-visualização antes de confirmar — deve aparecer somente 1 página</li>
+    </ul>
+  </div>
+
+  <!-- Chrome -->
+  <div class="browser-section">
+    <div class="browser-header bg-chrome">
+      <span class="icon">🟢</span>
+      <div>
+        <div>Google Chrome — Recomendado</div>
+        <div style="font-size:12px;opacity:.8;font-weight:400">Windows, Mac, Linux</div>
+      </div>
+      <span class="badge-recomendado">⭐ Melhor Opção</span>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="titulo">Preencha a ordem no formulário</div>
+          <div class="desc">Abra o formulário principal, preencha todos os campos necessários e confira os dados.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="titulo">Clique no botão 🖨️ Exportar PDF</div>
+          <div class="desc">O botão vermelho "Exportar PDF" fica no topo do formulário. Ao clicar, o Chrome abre a janela de impressão automaticamente.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="titulo">Configure a impressão assim:</div>
+          <div class="print-mockup">
+            <div class="linha"><span class="key">Destino:</span><span class="val destaque">Salvar como PDF ← IMPORTANTE</span></div>
+            <div class="separador"></div>
+            <div class="linha"><span class="key">Tamanho:</span><span class="val">A4</span></div>
+            <div class="linha"><span class="key">Orientação:</span><span class="val">Retrato (vertical)</span></div>
+            <div class="separador"></div>
+            <div class="linha"><span class="key">Escala:</span><span class="val">Padrão (100%)</span></div>
+            <div class="linha"><span class="key">Margens:</span><span class="val">Nenhuma ou Mínimo</span></div>
+            <div class="linha"><span class="key">Cabeçalhos/Rodapés:</span><span class="val destaque">☐ DESMARCAR ← IMPORTANTE</span></div>
+          </div>
+          <div class="dica">💡 Acesse "Mais configurações" para ver a opção de Cabeçalhos e Rodapés</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="titulo">Verifique a pré-visualização</div>
+          <div class="desc">Deve aparecer <strong>1 página A4</strong> na pré-visualização. Se aparecer 2 páginas, verifique as configurações de margem e cabeçalhos/rodapés.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="titulo">Clique em Salvar</div>
+          <div class="desc">Escolha a pasta e o nome do arquivo. O PDF será gerado com a ordem em 1 página A4.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edge -->
+  <div class="browser-section">
+    <div class="browser-header bg-edge">
+      <span class="icon">🔵</span>
+      <div>
+        <div>Microsoft Edge</div>
+        <div style="font-size:12px;opacity:.8;font-weight:400">Windows, Mac</div>
+      </div>
+      <span class="badge-recomendado">✅ Idêntico ao Chrome</span>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="titulo">O processo é idêntico ao Chrome</div>
+          <div class="desc">O Edge é baseado no mesmo motor (Chromium), então o resultado e as opções são iguais ao Chrome.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="titulo">Clique em Exportar PDF e configure assim:</div>
+          <div class="print-mockup">
+            <div class="linha"><span class="key">Impressora:</span><span class="val destaque">Salvar como PDF ← IMPORTANTE</span></div>
+            <div class="separador"></div>
+            <div class="linha"><span class="key">Tamanho do papel:</span><span class="val">A4</span></div>
+            <div class="linha"><span class="key">Orientação:</span><span class="val">Retrato</span></div>
+            <div class="separador"></div>
+            <div class="linha"><span class="key">Mais configurações:</span><span class="val">Expandir para ver mais opções</span></div>
+            <div class="linha"><span class="key">Cabeçalhos/Rodapés:</span><span class="val destaque">☐ DESMARCAR</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="titulo">Clique em Salvar</div>
+          <div class="desc">Escolha onde salvar o PDF. O resultado será idêntico ao Chrome.</div>
+          <div class="dica">💡 O Edge também tem a opção "Imprimir para PDF" nativa do Windows como alternativa.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firefox -->
+  <div class="browser-section">
+    <div class="browser-header bg-firefox">
+      <span class="icon">🟠</span>
+      <div>
+        <div>Mozilla Firefox</div>
+        <div style="font-size:12px;opacity:.8;font-weight:400">Windows, Mac, Linux</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="titulo">Clique em Exportar PDF no formulário</div>
+          <div class="desc">A janela de impressão do Firefox vai abrir. O layout pode ser um pouco diferente do Chrome.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="titulo">Configure a impressão no Firefox:</div>
+          <div class="print-mockup">
+            <div class="linha"><span class="key">Destino/Impressora:</span><span class="val destaque">Salvar em PDF (Mozilla)</span></div>
+            <div class="separador"></div>
+            <div class="linha"><span class="key">Formato do papel:</span><span class="val">A4</span></div>
+            <div class="linha"><span class="key">Orientação:</span><span class="val">Retrato</span></div>
+            <div class="separador"></div>
+            <div class="linha"><span class="key">Escala:</span><span class="val">Ajustar ao tamanho da página</span></div>
+            <div class="linha"><span class="key">Margens:</span><span class="val">Padrão ou Nenhum</span></div>
+          </div>
+          <div class="alerta">⚠️ No Firefox, desmarque "Imprimir cabeçalhos e rodapés" na aba "Opções". Sem isso, pode aparecer texto extra do navegador no PDF.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="titulo">Aba "Opções" — configurações extras</div>
+          <div class="desc">No Firefox, clique na aba "Opções" na janela de impressão para encontrar as configurações de cabeçalho e rodapé e desmarque todas.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="titulo">Clique em Imprimir</div>
+          <div class="desc">Escolha onde salvar o PDF. Se aparecerem 2 páginas, tente reduzir a escala para 90% e refaça.</div>
+          <div class="dica">💡 No Firefox, o resultado é bom mas pode ter pequenas diferenças de layout. Para resultado idêntico ao PDF original, use Chrome ou Edge.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Safari -->
+  <div class="browser-section">
+    <div class="browser-header bg-safari">
+      <span class="icon">🍎</span>
+      <div>
+        <div>Safari — Mac e iOS</div>
+        <div style="font-size:12px;opacity:.8;font-weight:400">macOS, iPhone, iPad</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="titulo">No Mac: Arquivo → Imprimir (Cmd+P)</div>
+          <div class="desc">Ou clique no botão "Exportar PDF" no formulário. A janela de impressão do macOS vai abrir.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="titulo">Configure assim no macOS:</div>
+          <div class="print-mockup">
+            <div class="linha"><span class="key">Papel:</span><span class="val">A4</span></div>
+            <div class="linha"><span class="key">Orientação:</span><span class="val">Retrato</span></div>
+            <div class="separador"></div>
+            <div class="linha"><span class="key">Escala:</span><span class="val">95% ou Ajustar</span></div>
+            <div class="separador"></div>
+            <div class="linha"><span class="key">Cabeçalho/Rodapé:</span><span class="val destaque">☐ DESMARCAR</span></div>
+          </div>
+          <div class="alerta">⚠️ No Safari, o PDF pode se dividir em 2 páginas mais facilmente. Tente reduzir a escala para 90% se isso acontecer.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="titulo">Salvar como PDF no Mac</div>
+          <div class="desc">No canto inferior esquerdo da janela de impressão, clique em <strong>PDF → Salvar como PDF</strong>.</div>
+          <div class="dica">💡 No Mac, também é possível usar o Chrome ou Edge para melhor resultado. São gratuitos e disponíveis para macOS.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="titulo">No iPhone/iPad</div>
+          <div class="desc">No iOS, o resultado pode variar. Para uso profissional, recomendamos usar um computador com Chrome ou Edge para gerar o PDF.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparativo -->
+  <div class="comparativo">
+    <h2>📊 Comparativo Resumido</h2>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Navegador</th>
+          <th>1 Página A4</th>
+          <th>"Salvar como PDF"</th>
+          <th>Sem texto extra</th>
+          <th>Layout fiel</th>
+          <th>Recomendação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>🟢 Chrome</td>
+          <td><span class="check">✅</span></td>
+          <td><span class="check">✅</span></td>
+          <td><span class="check">✅</span></td>
+          <td><span class="check">✅</span></td>
+          <td><strong>⭐ 1ª opção</strong></td>
+        </tr>
+        <tr>
+          <td>🔵 Edge</td>
+          <td><span class="check">✅</span></td>
+          <td><span class="check">✅</span></td>
+          <td><span class="check">✅</span></td>
+          <td><span class="check">✅</span></td>
+          <td><strong>⭐ 2ª opção</strong></td>
+        </tr>
+        <tr>
+          <td>🟠 Firefox</td>
+          <td><span class="warn">⚠️</span></td>
+          <td><span class="check">✅</span></td>
+          <td><span class="warn">⚠️</span></td>
+          <td><span class="warn">⚠️</span></td>
+          <td>Funciona com ajustes</td>
+        </tr>
+        <tr>
+          <td>🍎 Safari</td>
+          <td><span class="warn">⚠️</span></td>
+          <td><span class="check">✅</span></td>
+          <td><span class="warn">⚠️</span></td>
+          <td><span class="warn">⚠️</span></td>
+          <td>Ajustar escala para 90%</td>
+        </tr>
+        <tr>
+          <td>📱 Chrome Mobile</td>
+          <td><span class="cross">❌</span></td>
+          <td><span class="warn">⚠️</span></td>
+          <td><span class="cross">❌</span></td>
+          <td><span class="cross">❌</span></td>
+          <td>Usar no computador</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq">
+    <h2>❓ Perguntas Frequentes</h2>
+    <div class="faq-item">
+      <div class="pergunta">O PDF está saindo em 2 páginas, o que fazer?</div>
+      <div class="resposta">
+        1. Certifique-se de que "Cabeçalhos e Rodapés" estão desmarcados.<br>
+        2. Verifique se as margens estão em "Nenhuma" ou "Mínimo".<br>
+        3. Se ainda assim sair em 2 páginas, tente reduzir a escala para 95% ou 90% na janela de impressão.<br>
+        4. Use o Google Chrome ou Microsoft Edge para melhor resultado.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="pergunta">A logo está cortada ou não aparece no PDF. O que fazer?</div>
+      <div class="resposta">
+        A logo pode não aparecer se a impressão estiver configurada para não imprimir imagens de fundo. No Chrome, ative "Gráficos em segundo plano" nas opções de impressão.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="pergunta">Como reimprimir uma ordem que já está no histórico?</div>
+      <div class="resposta">
+        1. Acesse o Histórico de Ordens.<br>
+        2. Localize a ordem desejada na tabela.<br>
+        3. Clique no botão 🖨️ PDF na linha da ordem.<br>
+        4. A ordem abrirá em uma nova aba pronta para impressão.<br>
+        5. Clique em "Imprimir / Salvar PDF".
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="pergunta">O PDF está com texto sobreposto ou campos cortados. Como resolver?</div>
+      <div class="resposta">
+        Tente as seguintes soluções:<br>
+        1. Use Chrome ou Edge (resultado mais confiável).<br>
+        2. Reduza a escala para 90% na janela de impressão.<br>
+        3. Certifique-se de que o papel está configurado como A4 e orientação Retrato.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="pergunta">Como nomear o PDF automaticamente?</div>
+      <div class="resposta">
+        Ao clicar em "Exportar PDF", o título da janela é automaticamente definido com o número da O.C. e o nome do motorista (ex: OC-2026-0001 - João Silva). Na janela de impressão, o nome do arquivo já aparecerá sugerido assim. Você pode alterar antes de salvar.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="pergunta">Posso gerar PDF no celular?</div>
+      <div class="resposta">
+        Sim, mas o resultado pode variar. Para uso profissional, recomendamos usar um computador com Chrome ou Edge. No celular, o layout pode não caber corretamente em 1 página A4.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.guia-container -->
+
+<div style="background:#1a3a5c;color:rgba(255,255,255,.7);font-size:11px;text-align:center;padding:14px">
+  PIANETTO TRANSPORTES E LOGÍSTICA | CNPJ: 43.976.512/0001-09 | ROD. BR 060 KM 388 — RIO VERDE/GO
+</div>
+
+</body>
+</html>

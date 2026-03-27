@@ -1,0 +1,473 @@
+/* ============================================================
+   PIANETTO TRANSPORTES — Design System
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --azul:    #1a3a5c;
+  --azul2:   #2563a8;
+  --cinza1:  #f4f6f8;
+  --cinza2:  #e2e8f0;
+  --cinza3:  #94a3b8;
+  --txt:     #1e293b;
+  --borda:   #cbd5e1;
+  --verde:   #16a34a;
+  --amarelo: #ca8a04;
+  --vermelho:#dc2626;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--cinza1);
+  color: var(--txt);
+  font-size: 14px;
+}
+
+/* --- Navbar --- */
+.navbar {
+  background: linear-gradient(135deg, var(--azul), var(--azul2));
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+.navbar img { height: 40px; filter: brightness(0) invert(1); }
+.navbar-title { color: #fff; font-size: 18px; font-weight: 700; }
+.navbar-links { margin-left: auto; display: flex; gap: 10px; }
+.navbar-links a {
+  color: rgba(255,255,255,.85);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: background .2s;
+}
+.navbar-links a:hover, .navbar-links a.ativo { background: rgba(255,255,255,.15); color: #fff; }
+
+/* --- Status banner --- */
+.status-banner {
+  padding: 6px 16px;
+  font-size: 12px;
+  text-align: center;
+  font-weight: 600;
+}
+.status-banner.online  { background: #dcfce7; color: #15803d; }
+.status-banner.offline { background: #fef9c3; color: #854d0e; }
+
+/* --- Container --- */
+.container { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+
+/* --- Cabeçalho do formulário --- */
+.form-header {
+  background: linear-gradient(135deg, var(--azul), var(--azul2));
+  border-radius: 10px 10px 0 0;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.form-header .logo-box {
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.form-header .logo-box img { height: 54px; }
+.form-header .header-info { color: #fff; }
+.form-header .header-info h1 { font-size: 20px; font-weight: 800; letter-spacing: .5px; }
+.form-header .header-info p  { font-size: 11px; opacity: .85; margin-top: 2px; }
+
+/* --- Barra PEDIDO / OC --- */
+.pedido-bar {
+  background: var(--azul);
+  color: #fff;
+  padding: 8px 24px;
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+.pedido-bar label { font-size: 11px; opacity: .75; display: block; }
+.pedido-bar .val  { font-size: 15px; font-weight: 700; }
+.pedido-bar input[type=text] {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px dashed rgba(255,255,255,.6);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  width: 200px;
+  outline: none;
+  padding: 0 2px;
+}
+.oc-num { color: #fbbf24; }
+
+/* --- Card de seção --- */
+.card {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.card-header {
+  background: var(--azul);
+  color: #fff;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.card-body { padding: 14px 16px; }
+
+/* --- Grid de campos --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.form-group { display: flex; flex-direction: column; gap: 3px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: 11px; color: var(--cinza3); font-weight: 600; text-transform: uppercase; }
+.form-group input, .form-group select, .form-group textarea {
+  border: 1px solid var(--borda);
+  border-radius: 5px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--txt);
+  width: 100%;
+  font-family: inherit;
+  transition: border .2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: var(--azul2);
+  box-shadow: 0 0 0 2px rgba(37,99,168,.12);
+}
+
+/* --- Tabela de placas --- */
+.placa-table { width: 100%; border-collapse: collapse; }
+.placa-table th {
+  background: var(--cinza1);
+  font-size: 11px;
+  color: var(--cinza3);
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  text-align: left;
+  border: 1px solid var(--borda);
+}
+.placa-table td { border: 1px solid var(--borda); padding: 4px 6px; }
+.placa-table td input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 13px;
+  padding: 4px;
+  font-family: inherit;
+  text-transform: uppercase;
+}
+.placa-table td input:focus { outline: 1px solid var(--azul2); border-radius: 3px; }
+
+/* --- Assinaturas --- */
+.assinaturas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 14px 16px; }
+.assinatura-box { text-align: center; }
+.assinatura-linha {
+  border-top: 1px solid var(--txt);
+  margin: 28px 0 6px;
+  padding-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.assinatura-cargo { font-size: 11px; color: var(--cinza3); }
+
+/* --- Rodapé --- */
+.form-footer {
+  background: var(--azul);
+  color: rgba(255,255,255,.8);
+  font-size: 10px;
+  text-align: center;
+  padding: 8px 16px;
+  border-radius: 0 0 10px 10px;
+}
+
+/* --- Botões de ação --- */
+.acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: opacity .2s, transform .1s;
+}
+.btn:hover { opacity: .88; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-pdf     { background: #dc2626; color: #fff; }
+.btn-salvar  { background: var(--azul2); color: #fff; }
+.btn-limpar  { background: var(--cinza2); color: var(--txt); }
+.btn-novo    { background: var(--verde); color: #fff; }
+.btn-duplicar{ background: #16a34a; color: #fff; }
+.btn-oc      { background: var(--amarelo); color: #fff; }
+.btn-sm      { padding: 5px 12px; font-size: 12px; }
+.btn-danger  { background: #dc2626; color: #fff; }
+
+/* --- Campos bloqueados (duplicação) --- */
+.campo-bloqueado input,
+.campo-bloqueado select,
+.campo-bloqueado textarea {
+  background: #fffbeb !important;
+  border-color: #f59e0b !important;
+  border-style: dashed !important;
+  cursor: not-allowed;
+  color: #92400e;
+}
+.campo-bloqueado label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.btn-desbloquear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--amarelo);
+  padding: 0;
+  font-weight: 600;
+}
+
+/* --- Banner de duplicação --- */
+.banner-duplicacao {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+/* --- Histórico --- */
+.filtros-bar {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.filtros-bar .form-group { min-width: 150px; }
+.cards-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.card-resumo {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: center;
+}
+.card-resumo .num { font-size: 28px; font-weight: 800; color: var(--azul); }
+.card-resumo .leg { font-size: 11px; color: var(--cinza3); text-transform: uppercase; }
+
+/* --- Tabela histórico --- */
+.tabela-hist { width: 100%; border-collapse: collapse; background: #fff; }
+.tabela-hist th {
+  background: var(--cinza1);
+  font-size: 11px;
+  color: var(--cinza3);
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 2px solid var(--borda);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tabela-hist th:hover { background: var(--cinza2); }
+.tabela-hist td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--cinza2);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.tabela-hist tr:hover td { background: #f8faff; }
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-pendente   { background: #fef9c3; color: #854d0e; }
+.badge-transito   { background: #dbeafe; color: #1e40af; }
+.badge-entregue   { background: #dcfce7; color: #15803d; }
+.badge-cancelado  { background: #fee2e2; color: #991b1b; }
+.badge-local      { background: #e0e7ff; color: #3730a3; font-size: 10px; }
+.oc-badge         { color: var(--vermelho); font-weight: 700; }
+
+/* --- Modal --- */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 10px;
+  max-width: 680px;
+  width: 95%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,.22);
+}
+.modal-header {
+  background: linear-gradient(135deg, var(--azul), var(--azul2));
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 10px 10px 0 0;
+}
+.modal-header img { height: 36px; filter: brightness(0) invert(1); }
+.modal-header h2  { font-size: 16px; flex: 1; }
+.modal-close { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
+.modal-body  { padding: 18px 20px; }
+.detalhe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.detalhe-item label { font-size: 11px; color: var(--cinza3); text-transform: uppercase; display: block; }
+.detalhe-item span  { font-size: 13px; font-weight: 600; }
+.modal-acoes { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 20px; border-top: 1px solid var(--cinza2); }
+
+/* --- Paginação --- */
+.paginacao { display: flex; gap: 6px; align-items: center; margin-top: 14px; justify-content: center; }
+.paginacao button {
+  padding: 5px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+.paginacao button.ativo { background: var(--azul); color: #fff; border-color: var(--azul); }
+.paginacao button:hover:not(.ativo) { background: var(--cinza1); }
+
+/* ============================================================
+   IMPRESSÃO — 1 PÁGINA A4
+   ============================================================ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 5mm 6mm 5mm 6mm;
+  }
+
+  html, body {
+    width: 210mm;
+    height: 297mm;
+    font-size: 9px !important;
+    background: #fff !important;
+  }
+
+  /* Ocultar elementos de UI */
+  .navbar,
+  .status-banner,
+  .acoes,
+  .btn,
+  .btn-desbloquear,
+  .banner-duplicacao,
+  .no-print { display: none !important; }
+
+  .container {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .form-header {
+    padding: 8px 12px;
+    border-radius: 4px 4px 0 0;
+    gap: 10px;
+  }
+  .form-header .logo-box { padding: 4px 8px; }
+  .form-header .logo-box img { height: 36px; }
+  .form-header .header-info h1 { font-size: 13px; }
+  .form-header .header-info p  { font-size: 8px; }
+
+  .pedido-bar {
+    padding: 4px 12px;
+    gap: 14px;
+  }
+  .pedido-bar .val, .pedido-bar input { font-size: 11px; }
+  .pedido-bar label { font-size: 8px; }
+
+  .card {
+    margin-bottom: 6px;
+    border-radius: 4px;
+    break-inside: avoid;
+  }
+  .card-header {
+    padding: 4px 10px;
+    font-size: 9px;
+  }
+  .card-body { padding: 6px 10px; }
+
+  .form-grid { gap: 5px; }
+  .form-group label { font-size: 8px; }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 9px;
+    padding: 3px 6px;
+    border-radius: 3px;
+  }
+
+  .placa-table th { font-size: 8px; padding: 3px 6px; }
+  .placa-table td { padding: 2px 4px; }
+  .placa-table td input { font-size: 9px; }
+
+  .assinaturas { padding: 6px 10px; gap: 14px; }
+  .assinatura-linha { margin: 18px 0 4px; font-size: 9px; }
+  .assinatura-cargo { font-size: 8px; }
+
+  .form-footer {
+    padding: 4px 10px;
+    font-size: 8px;
+    border-radius: 0 0 4px 4px;
+  }
+
+  /* Campos bloqueados ficam normais no PDF */
+  .campo-bloqueado input,
+  .campo-bloqueado select,
+  .campo-bloqueado textarea {
+    background: #fff !important;
+    border-color: var(--borda) !important;
+    border-style: solid !important;
+    color: var(--txt) !important;
+    cursor: default;
+  }
+}

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impressão de Ordem — Pianetto Transportes</title>
+<style>
+/* ============================================================
+   PRINT.HTML — otimizado para 1 página A4
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --azul:  #1a3a5c;
+  --azul2: #2563a8;
+  --borda: #cbd5e1;
+  --txt:   #1e293b;
+  --cinza: #f4f6f8;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f0f2f5;
+  font-size: 10px;
+  color: var(--txt);
+}
+
+/* Barra de ações — some no PDF */
+.barra-acoes {
+  background: var(--azul);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.barra-acoes a, .barra-acoes button {
+  color: #fff;
+  background: rgba(255,255,255,.18);
+  border: none;
+  border-radius: 5px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: none;
+  font-family: inherit;
+}
+.barra-acoes a:hover, .barra-acoes button:hover { background: rgba(255,255,255,.3); }
+.btn-imprimir { background: #dc2626 !important; font-weight: 700; }
+.titulo-barra { color: rgba(255,255,255,.8); font-size: 13px; margin-left: 8px; }
+
+/* Wrapper da ordem */
+.ordem-wrapper {
+  max-width: 780px;
+  margin: 16px auto;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,.12);
+}
+
+/* Cabeçalho */
+.ordem-header {
+  background: linear-gradient(135deg, var(--azul), var(--azul2));
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+}
+.logo-box {
+  background: #fff;
+  border-radius: 6px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+}
+.logo-box img { height: 44px; }
+.header-info { color: #fff; }
+.header-info h1 { font-size: 13px; font-weight: 800; letter-spacing: .3px; }
+.header-info p  { font-size: 8px; opacity: .85; margin-top: 1px; }
+
+/* Barra pedido/OC */
+.pedido-bar {
+  background: var(--azul);
+  color: #fff;
+  display: flex;
+  gap: 20px;
+  padding: 5px 14px;
+}
+.pedido-bar .item label { font-size: 8px; opacity: .7; display: block; }
+.pedido-bar .item .val  { font-size: 12px; font-weight: 700; }
+.oc-num { color: #fbbf24; }
+
+/* Seções */
+.secao { border-bottom: 1px solid var(--borda); }
+.secao-titulo {
+  background: var(--azul);
+  color: #fff;
+  padding: 4px 12px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.secao-corpo { padding: 6px 12px; }
+
+/* Grid de campos */
+.campos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.campo { }
+.campo label {
+  font-size: 7.5px;
+  color: #94a3b8;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 1px;
+}
+.campo .valor {
+  font-size: 10px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--borda);
+  padding-bottom: 2px;
+  min-height: 16px;
+}
+.campo.full { grid-column: 1 / -1; }
+.campo.col2 { grid-column: span 2; }
+
+/* Tabela de placas */
+.placa-table { width: 100%; border-collapse: collapse; }
+.placa-table th {
+  background: var(--cinza);
+  font-size: 7.5px;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--borda);
+  text-align: left;
+}
+.placa-table td {
+  border: 1px solid var(--borda);
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Assinaturas */
+.assinaturas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 6px 12px 8px;
+}
+.assinatura-box { text-align: center; }
+.assinatura-linha {
+  border-top: 1px solid var(--txt);
+  margin: 18px 0 3px;
+  padding-top: 4px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.assinatura-cargo { font-size: 8px; color: #64748b; }
+
+/* Rodapé */
+.ordem-footer {
+  background: var(--azul);
+  color: rgba(255,255,255,.8);
+  font-size: 7.5px;
+  text-align: center;
+  padding: 5px 12px;
+}
+
+/* Badge status */
+.status-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 20px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   IMPRESSÃO — forçar 1 página A4
+   ============================================================ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 4mm 5mm 4mm 5mm;
+  }
+
+  html, body {
+    background: #fff;
+    font-size: 9px;
+  }
+
+  .barra-acoes { display: none !important; }
+
+  .ordem-wrapper {
+    max-width: 100%;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+    /* Forçar que tudo caiba em 1 página */
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Reduzir fontes ainda mais na impressão */
+  .header-info h1 { font-size: 11px; }
+  .header-info p  { font-size: 7px; }
+  .pedido-bar .item .val { font-size: 10px; }
+  .campo .valor { font-size: 9px; }
+  .secao-titulo { font-size: 7px; padding: 3px 10px; }
+  .secao-corpo  { padding: 4px 10px; }
+  .campos-grid  { gap: 4px; }
+  .assinaturas  { padding: 4px 10px 5px; }
+  .assinatura-linha { margin: 14px 0 3px; font-size: 8px; }
+  .ordem-footer { padding: 3px 10px; font-size: 7px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Barra de ações (não aparece no PDF) -->
+<div class="barra-acoes">
+  <a href="historico.html">← Voltar</a>
+  <span class="titulo-barra">Visualização da Ordem</span>
+  <button class="btn-imprimir" onclick="imprimir()">🖨️ Imprimir / Salvar PDF</button>
+  <button onclick="duplicar()">🔁 Duplicar</button>
+</div>
+
+<!-- Ordem -->
+<div class="ordem-wrapper" id="ordem">
+
+  <!-- Cabeçalho -->
+  <div class="ordem-header">
+    <div class="logo-box">
+      <img src="images/logo.png" alt="Pianetto">
+    </div>
+    <div class="header-info">
+      <h1>PIANETTO TRANSPORTES E LOGÍSTICA</h1>
+      <p>CNPJ 43.976.512/0001-09 | INSC. EST 20.101.161-1</p>
+      <p>ROD. BR 060 KM 388 SALA 139 — RIO VERDE/GO</p>
+      <p>comercial.goianesia@pianettotransportes.com.br</p>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <span id="status-print" class="status-badge" style="background:#dcfce7;color:#15803d"></span>
+    </div>
+  </div>
+
+  <!-- Pedido/OC -->
+  <div class="pedido-bar">
+    <div class="item">
+      <label>PEDIDO</label>
+      <span class="val" id="p-pedido">—</span>
+    </div>
+    <div class="item">
+      <label>O.C.</label>
+      <span class="val oc-num" id="p-oc">—</span>
+    </div>
+    <div class="item">
+      <label>DATA DE EMISSÃO</label>
+      <span class="val" id="p-data">—</span>
+    </div>
+    <div class="item">
+      <label>DATA AGENDAMENTO</label>
+      <span class="val" id="p-agend">—</span>
+    </div>
+  </div>
+
+  <!-- Dados da Carga -->
+  <div class="secao">
+    <div class="secao-titulo">📦 Dados da Carga</div>
+    <div class="secao-corpo">
+      <div class="campos-grid">
+        <div class="campo col2"><label>Remetente</label><div class="valor" id="p-remetente">—</div></div>
+        <div class="campo"><label>Cidade de Origem</label><div class="valor" id="p-cidade_orig">—</div></div>
+        <div class="campo"><label>Modalidade do Veículo</label><div class="valor" id="p-mod_veiculo">—</div></div>
+        <div class="campo col2"><label>Recebedor</label><div class="valor" id="p-recebedor">—</div></div>
+        <div class="campo"><label>Destino</label><div class="valor" id="p-destino">—</div></div>
+        <div class="campo"><label>Mercadoria</label><div class="valor" id="p-mercadoria">—</div></div>
+        <div class="campo"><label>Peso Bruto (kg)</label><div class="valor" id="p-peso_bruto">—</div></div>
+        <div class="campo"><label>Terminal</label><div class="valor" id="p-terminal">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dados do Veículo -->
+  <div class="secao">
+    <div class="secao-titulo">🚛 Dados do Veículo</div>
+    <div class="secao-corpo">
+      <table class="placa-table">
+        <tr>
+          <th>Placa Cav.</th>
+          <th>Placa Car.1</th>
+          <th>Dolly</th>
+          <th>Placa Car.3</th>
+          <th>UF</th>
+        </tr>
+        <tr>
+          <td id="p-placa_cav">—</td>
+          <td id="p-placa_car1">—</td>
+          <td id="p-dolly">—</td>
+          <td id="p-placa_car3">—</td>
+          <td id="p-uf">—</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Dados do Motorista -->
+  <div class="secao">
+    <div class="secao-titulo">👤 Dados do Motorista</div>
+    <div class="secao-corpo">
+      <div class="campos-grid">
+        <div class="campo col2"><label>Motorista</label><div class="valor" id="p-motorista">—</div></div>
+        <div class="campo"><label>Celular</label><div class="valor" id="p-celular">—</div></div>
+        <div class="campo"><label>CPF</label><div class="valor" id="p-cpf">—</div></div>
+        <div class="campo"><label>RG</label><div class="valor" id="p-rg">—</div></div>
+        <div class="campo"><label>CNH</label><div class="valor" id="p-cnh">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local / Obs -->
+  <div class="secao">
+    <div class="secao-titulo">📍 Local de Coleta / Observações</div>
+    <div class="secao-corpo">
+      <div class="campos-grid">
+        <div class="campo col2"><label>Local de Coleta</label><div class="valor" id="p-local_coleta">—</div></div>
+        <div class="campo col2"><label>Observações</label><div class="valor" id="p-obs">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assinaturas -->
+  <div class="secao">
+    <div class="assinaturas">
+      <div class="assinatura-box">
+        <div class="assinatura-linha" id="p-ass-motorista">MOTORISTA</div>
+        <div class="assinatura-cargo">MOTORISTA</div>
+      </div>
+      <div class="assinatura-box">
+        <div class="assinatura-linha">ANALISTA DE LOGÍSTICA</div>
+        <div class="assinatura-cargo">ANALISTA DE LOGÍSTICA — PIANETTO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <div class="ordem-footer">
+    PIANETTO TRANSPORTES E LOGÍSTICA | CNPJ: 43.976.512/0001-09 | ROD. BR 060 KM 388 — RIO VERDE/GO
+  </div>
+
+</div><!-- /.ordem-wrapper -->
+
+<script src="js/storage.js"></script>
+<script>
+  let ordemAtual = null;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!id) {
+      document.getElementById('ordem').innerHTML = '<p style="padding:20px;color:#dc2626">ID da ordem não informado.</p>';
+      return;
+    }
+    await verificarConexao();
+    const o = await buscarOrdem(id);
+    if (!o) {
+      document.getElementById('ordem').innerHTML = '<p style="padding:20px;color:#dc2626">Ordem não encontrada.</p>';
+      return;
+    }
+    ordemAtual = o;
+    preencher(o);
+    document.title = `${o.oc || o.pedido || 'Ordem'} — Pianetto`;
+  });
+
+  function preencher(o) {
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val || '—';
+    };
+    set('p-pedido',     o.pedido);
+    set('p-oc',         o.oc);
+    set('p-data',       o.data_emissao);
+    set('p-agend',      o.data_agend);
+    set('p-remetente',  o.remetente);
+    set('p-cidade_orig',o.cidade_orig);
+    set('p-mod_veiculo',o.mod_veiculo);
+    set('p-recebedor',  o.recebedor);
+    set('p-destino',    o.destino);
+    set('p-mercadoria', o.mercadoria);
+    set('p-peso_bruto', o.peso_bruto ? o.peso_bruto + ' kg' : null);
+    set('p-terminal',   o.terminal);
+    set('p-placa_cav',  o.placa_cav);
+    set('p-placa_car1', o.placa_car1);
+    set('p-dolly',      o.dolly);
+    set('p-placa_car3', o.placa_car3);
+    set('p-uf',         o.uf);
+    set('p-motorista',  o.motorista);
+    set('p-celular',    o.celular);
+    set('p-cpf',        o.cpf);
+    set('p-rg',         o.rg);
+    set('p-cnh',        o.cnh);
+    set('p-local_coleta', o.local_coleta);
+    set('p-obs',        o.obs);
+    // Status badge
+    const sb = document.getElementById('status-print');
+    if (sb && o.status) {
+      sb.textContent = o.status;
+      const cores = { 'Pendente':'background:#fef9c3;color:#854d0e','Em Transporte':'background:#dbeafe;color:#1e40af','Entregue':'background:#dcfce7;color:#15803d','Cancelado':'background:#fee2e2;color:#991b1b' };
+      sb.style.cssText = (cores[o.status] || '') + ';display:inline-block;padding:2px 10px;border-radius:20px;font-size:9px;font-weight:700';
+    }
+    // Assinatura motorista
+    set('p-ass-motorista', o.motorista || 'MOTORISTA');
+  }
+
+  function imprimir() {
+    if (ordemAtual) {
+      document.title = `${ordemAtual.oc || ordemAtual.pedido || 'Ordem'} - Pianetto`;
+    }
+    window.print();
+  }
+
+  function duplicar() {
+    if (!ordemAtual) return;
+    sessionStorage.setItem('duplicar_dados', JSON.stringify(ordemAtual));
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>
